@@ -1,5 +1,11 @@
 {
-    "tu": 6.0,
-    "den": 19.0,
-    "socau": 20
+    "tu": 0,
+    "den": 10,
+    "socauhoi": 20,
+    "sopheptinh": 2.0,
+    "pheptinh": [
+        "+",
+        "-"
+    ],
+    "ketquaam": false
 }

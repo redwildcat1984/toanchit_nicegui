@@ -1,14 +1,14 @@
 import json
 
 class JsonConnect:
-    def __init__(self) -> None:
-        self.path:str|None = None
+    def __init__(self, path:str|None=None) -> None:
+        self._path = path
         self.data = None
 
     def load(self):
-        if self.path:
+        if self._path:
             try:
-                with open(self.path, 'r', encoding='utf-8') as f:
+                with open(self._path, 'r', encoding='utf-8') as f:
                     self.data = json.load(f)
                     return True
             except FileNotFoundError:
@@ -17,9 +17,9 @@ class JsonConnect:
             pass
 
     def save(self):
-        if self.path:
+        if self._path:
             try:
-                with open(self.path, 'w', encoding='utf-8') as f:
+                with open(self._path, 'w', encoding='utf-8') as f:
                     json.dump(self.data, f, indent=4, ensure_ascii=False)
                     return True
             except Exception as e:
