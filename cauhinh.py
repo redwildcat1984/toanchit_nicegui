@@ -11,6 +11,8 @@ class CauHinh:
         self._pheptinh:list = []
         self._sopheptinh:int = 2
         self._ketquaam:bool = False
+        self._batthoigian:bool = True
+        self._thoigian:int = 60
         self.mangsocau: list = [10, 20, 30]
         self.thongtin: str|None = None
         self.dialog: ui.dialog|None = None
@@ -19,18 +21,20 @@ class CauHinh:
     def nap_cau_hinh(self):
         kq = self.json.load()
         if kq and self.json.data is not None:
-            self._tu = self.json.data.get('tu', 0)
-            self._den = self.json.data.get('den', 0)
-            self._socauhoi = self.json.data.get('socauhoi', 0)
+            self._tu = int(self.json.data.get('tu', 0))
+            self._den = int(self.json.data.get('den', 0))
+            self._socauhoi = int(self.json.data.get('socauhoi', 0))
             self._pheptinh = self.json.data.get('pheptinh', ['+', '-'])
-            self._sopheptinh = self.json.data.get('sopheptinh', 2)
+            self._sopheptinh = int(self.json.data.get('sopheptinh', 2))
             self._ketquaam = self.json.data.get('ketquaam', False)
+            self._batthoigian = self.json.data.get('batthoigian', True)
+            self._thoigian = int(self.json.data.get('thoigian', 60))
             # ui.notify('Đã nạp dữ liệu cấu hình', color='green', type='positive')
         # else:
             # ui.notify('Nạp cấu hình không thành công. Có thể là sai đường dẫn hoặc file không tồn tại', color='orange', type='info')
 
     def luu_cau_hinh(self):
-        self.json.data = {'tu': self._tu, 'den': self._den, 'socauhoi': self._socauhoi, 'sopheptinh': self._sopheptinh, 'pheptinh': self._pheptinh, 'ketquaam': self._ketquaam}
+        self.json.data = {'tu': self._tu, 'den': self._den, 'socauhoi': self._socauhoi, 'sopheptinh': self._sopheptinh, 'pheptinh': self._pheptinh, 'ketquaam': self._ketquaam, 'batthoigian': self._batthoigian, 'thoigian': self._thoigian}
         kq = self.json.save()
         if kq:
             ui.notify('Lưu cấu hình thành công', color='green', type='positive')
@@ -55,7 +59,7 @@ class CauHinh:
     def build_ui(self):
         if self.dialog:
             return self.dialog
-        with ui.dialog().on_value_change(self.close) as self.dialog, ui.card(align_items='start'):
+        with ui.dialog().on_value_change(self.close) as self.dialog, ui.card(align_items='start').classes('p-6'):
             with ui.row(align_items='center'):
                 ui.label('Nhập khoảng số')
                 ui.number('Từ', on_change=self.hien_thong_tin).bind_value(self,'_tu')
@@ -71,6 +75,11 @@ class CauHinh:
                 for i in self._mangpheptinh:
                     dangchon = i in self._pheptinh
                     ui.checkbox(f'Phép "{i}"', value=dangchon, on_change=lambda e, p=i:self.cap_nhat_phep_tinh(p, e.value))
+
+            # Tùy chọn thời gian
+            with ui.row(align_items='center'):
+                ui.checkbox('Bật thời gian').bind_value(self, '_batthoigian')
+                ui.number('Thời gian làm bài').bind_value(self, '_thoigian')
 
             # Hiển thị thông tin đã chọn
             ui.label().bind_text_from(self, 'thongtin')

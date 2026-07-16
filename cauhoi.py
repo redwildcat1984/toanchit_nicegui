@@ -114,7 +114,7 @@ class BaiTap:
 
     def hienthi(self):
         with ui.card().classes('w-full max-w-5xl mx-auto p-6 bg-white shadow-md rounded-xl'):
-            with ui.row().classes('w-full justify-center gap-4 mb-6'):
+            with ui.row().classes('w-full justify-center gap-4 mb-6') as self.khung_diem:
                 with ui.card().classes('p-3 px-5 items-center border border-emerald-100 bg-emerald-50/30 min-w-[120px]'):
                     ui.label('Số câu đúng').classes('text-xs text-emerald-600 font-medium')
                     self.lbl_socaudung = ui.label('0').classes('text-2xl font-black text-emerald-700 mt-1').bind_text(self, '_socaudung')
@@ -122,6 +122,7 @@ class BaiTap:
                 with ui.card().classes('p-3 px-5 items-center border border-amber-100 bg-amber-50/30 min-w-[120px]'):
                     ui.label('Điểm').classes('text-xs text-amber-600 font-medium')
                     self.lbl_diem = ui.label('0').classes('text-2xl font-black text-amber-700 mt-1').bind_text(self, '_diem')
+            self.khung_diem.set_visibility(False)
 
             self.danh_sach_cau_hoi.clear()
             with ui.grid().classes('w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2'):
@@ -146,6 +147,9 @@ class BaiTap:
         self._diem = int(round((self._socaudung / self._socauhoi) * 10, 0)) if self._socauhoi > 0 else 0
 
         # CẬP NHẬT GIAO DIỆN TRỰC TIẾP TẠI ĐÂY:
+        if self.khung_diem:
+            self.khung_diem.set_visibility(True)
+
         if hasattr(self, 'lbl_socaudung'):
             self.lbl_socaudung.text = f'{self._socaudung}/{self._socauhoi}'
         if hasattr(self, 'lbl_diem'):
