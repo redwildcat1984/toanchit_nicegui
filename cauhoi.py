@@ -55,10 +55,16 @@ class CauHoi:
                 ui.label(f"{self._cauhoi} =").classes("text-base font-bold text-gray-700 whitespace-nowrap grow text-right pr-2")
 
                 # Cột 2: Ô nhập số - Giữ kích thước nhỏ gọn
-                ui.number().bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold'")
+                ui.number(on_change=lambda e: self.kiemtranhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold'")
 
                 # Cột 3: Icon đúng/sai (❓, ✅, ❌)
                 ui.label().bind_text(self, '_kiemtra').classes("text-xl font-bold w-8 text-center text-red-500")
+
+    def kiemtranhap(self, e):
+        if e.value is None and e.value == '':
+            self._kiemtra = '!'
+        else:
+            self._kiemtra = ''
 
     def chamdiem(self):
         if self._traloi is None or self._ketqua is None:
@@ -107,7 +113,7 @@ class BaiTap:
                 self._ketquaam = dt.get("ketquaam", False)
 
     def hienthi(self):
-        with ui.column().classes('w-full'):
+        with ui.card().classes('w-full max-w-5xl mx-auto p-6 bg-white shadow-md rounded-xl'):
             with ui.row().classes('w-full justify-center gap-4 mb-6'):
                 with ui.card().classes('p-3 px-5 items-center border border-emerald-100 bg-emerald-50/30 min-w-[120px]'):
                     ui.label('Số câu đúng').classes('text-xs text-emerald-600 font-medium')
@@ -115,7 +121,7 @@ class BaiTap:
 
                 with ui.card().classes('p-3 px-5 items-center border border-amber-100 bg-amber-50/30 min-w-[120px]'):
                     ui.label('Điểm').classes('text-xs text-amber-600 font-medium')
-                    self.lbl_diem = ui.label('0.0').classes('text-2xl font-black text-amber-700 mt-1').bind_text(self, '_diem')
+                    self.lbl_diem = ui.label('0').classes('text-2xl font-black text-amber-700 mt-1').bind_text(self, '_diem')
 
             self.danh_sach_cau_hoi.clear()
             with ui.grid().classes('w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2'):
@@ -136,7 +142,8 @@ class BaiTap:
             cauhoi.chamdiem()
             if cauhoi._kiemtra == '✅':
                 self._socaudung += 1
-        self._diem = round((self._socaudung / self._socauhoi) * 10, 1) if self._socauhoi > 0 else 0
+        # self._diem = round((self._socaudung / self._socauhoi) * 10, 0) if self._socauhoi > 0 else 0
+        self._diem = int(round((self._socaudung / self._socauhoi) * 10, 0)) if self._socauhoi > 0 else 0
 
         # CẬP NHẬT GIAO DIỆN TRỰC TIẾP TẠI ĐÂY:
         if hasattr(self, 'lbl_socaudung'):

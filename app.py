@@ -61,8 +61,7 @@ with ui.header():
         nut_nop_bai = ui.button('Nộp bài', on_click=nopbai, color='green')
         nut_nop_bai.set_visibility(False)
 
-vungcauhoi = ui.card().classes('w-full max-w-5xl mx-auto p-6 bg-white shadow-md rounded-xl')
-
+vungcauhoi = ui.element().classes('w-full mt-3 p-4')
 
 with ui.footer():
      with ui.row(align_items='center').classes('w-full justify-evenly'):
