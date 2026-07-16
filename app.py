@@ -3,6 +3,9 @@ from nicegui import ui
 from cauhinh import CauHinh
 from cauhoi import BaiTap
 
+# Đổi màu nền toàn bộ app
+ui.query('.q-page').style('background-color: #4f1e08;')
+
 cauhinh = CauHinh()
 cauhinh.nap_cau_hinh()
 cauhinh.build_ui()
@@ -42,7 +45,7 @@ def vecauhoi():
     if thanh_thoi_gian:
         thanh_thoi_gian.set_value(1.0)
     if nhan_thoi_gian:
-        nhan_thoi_gian.set_text(f'{thoi_gian_con_lai}')
+        nhan_thoi_gian.set_text(f'{int(thoi_gian_con_lai)}')
 
     # Tắt timer cũ nếu có trước khi chạy cái mới
     if timer_dem_nguoc:
@@ -66,7 +69,7 @@ def giam_thoi_gian():
         thoi_gian_con_lai -= 1
         # Cập nhật nhãn hiển thị chữ
         if thanh_thoi_gian and nhan_thoi_gian:
-            nhan_thoi_gian.set_text(f"{thoi_gian_con_lai} s")
+            nhan_thoi_gian.set_text(f"⌛ {thoi_gian_con_lai} s")
             ty_le = thoi_gian_con_lai / TONG_THOI_GIAN
             thanh_thoi_gian.set_value(ty_le)
 
@@ -81,7 +84,7 @@ def giam_thoi_gian():
                 nhan_thoi_gian.classes(replace='font-bold text-xl text-orange-500 text-center min-w-[120px]')
             else:
                 thanh_thoi_gian.props('color="green" size="10px"').classes(replace='w-3/4 md:w-4/5 lg:w-6/7 rounded-full outline-3 outline-offset-1 outline-pink-300 grow')
-                nhan_thoi_gian.classes(replace='font-bold text-center text-lg min-w-[120px]')
+                nhan_thoi_gian.classes(replace='font-bold text-center text-lg text-yellow-500 min-w-[120px]')
     else:
         # KHI HẾT GIỜ (Thời gian về 0)
         ui.notify('⌛ Đã hết thời gian làm bài!', type='warning')
@@ -121,20 +124,20 @@ def nopbai():
 
 with ui.header():
     with ui.row(align_items='center').classes('w-full justify-evenly'):
-        nut_tao_moi = ui.button('Tạo mới', on_click=vecauhoi)
-        nut_nop_bai = ui.button('Nộp bài', on_click=nopbai, color='green')
+        nut_tao_moi = ui.button(icon='add', on_click=vecauhoi, color='orange').props('size="lg"')
+        nut_nop_bai = ui.button(icon='done_all', on_click=nopbai, color='green').props('size="lg"')
         nut_nop_bai.set_visibility(False)
 
-        ui.button('Cấu hình', on_click=cauhinh.open)
+        ui.button(icon='settings', on_click=cauhinh.open, color='gray').props('size="lg"')
 
-with ui.row(align_items='center').classes('w-full p-4 shadow shadow-lg shadow-green-300/40 rounded-xl') as the_thoi_gian:
-    thanh_thoi_gian = ui.linear_progress(value=1.0, show_value=False).classes('w-3/4 md:w-4/5 lg:w-6/7 rounded-full outline-3 outline-offset-1 outline-pink-300 grow')
-    nhan_thoi_gian = ui.label(f"{thoi_gian_con_lai} s").classes('font-bold text-base text-center text-lg min-w-[120px]')
+with ui.row(align_items='center').classes('w-full p-4 rounded-xl') as the_thoi_gian:
+    thanh_thoi_gian = ui.linear_progress(value=1.0, show_value=False)
+    nhan_thoi_gian = ui.label()
 
     the_thoi_gian.set_visibility(False)
 
-
-vungcauhoi = ui.element().classes('w-full mt-3 p-4')
+with ui.element().classes('bg-brown-700 w-full grow'):
+    vungcauhoi = ui.element().classes('w-full mt-3 p-4')
 
 with ui.footer():
      with ui.row(align_items='center').classes('w-full justify-evenly'):

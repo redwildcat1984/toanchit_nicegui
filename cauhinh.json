@@ -1,6 +1,6 @@
 {
     "tu": 0,
-    "den": 15,
+    "den": 20,
     "socauhoi": 20,
     "sopheptinh": 1,
     "pheptinh": [
@@ -9,5 +9,5 @@
     ],
     "ketquaam": false,
     "batthoigian": true,
-    "thoigian": 360
+    "thoigian": 15.0
 }
