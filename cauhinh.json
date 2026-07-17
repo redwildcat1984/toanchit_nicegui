@@ -1,7 +1,7 @@
 {
-    "tu": 0,
+    "tu": 1,
     "den": 20,
-    "socauhoi": 20,
+    "socauhoi": 10,
     "sopheptinh": 1,
     "pheptinh": [
         "+",
@@ -9,5 +9,5 @@
     ],
     "ketquaam": false,
     "batthoigian": true,
-    "thoigian": 15.0
+    "thoigian": 10
 }

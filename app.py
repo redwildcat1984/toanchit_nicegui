@@ -1,148 +1,114 @@
-
 from nicegui import ui
+
 from cauhinh import CauHinh
 from cauhoi import BaiTap
+from thanhdemnguoc import ThanhDemNguoc
 
-# Đổi màu nền toàn bộ app
+# Tạo màu nền chung
 ui.query('.q-page').style('background-color: #4f1e08;')
 
+# Thêm hiệu ứng hiện dần
+ui.add_head_html('''
+<style>
+@keyframes hienDanNhe {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.fade-in-3s {
+    animation: hienDanNhe 3.0s ease-in-out forwards;
+}
+.fade-in-2s {
+    animation: hienDanNhe 2.0s ease-in-out forwards;
+}
+.fade-in-1s {
+    animation: hienDanNhe 1.0s ease-in-out forwards;
+}
+</style>
+''')
+
+# Khởi tạo các thành phần giao diện trên trang chủ
 cauhinh = CauHinh()
 cauhinh.nap_cau_hinh()
 cauhinh.build_ui()
 
-# Trạng thái các nút
-nut_tao_moi: ui.button|None = None
-nut_nop_bai: ui.button|None = None
+bai_tap_hien_tai:BaiTap|None = None
+thanh_dem_nguoc:ThanhDemNguoc|None = None
 
-# Trạng thái bài tập
-bai_tap_hien_tai: BaiTap|None = None
+# Hàm vẽ nội dung trang
+def taomoi():
+    global bai_tap_hien_tai, thanh_dem_nguoc
 
-# Bộ đếm thời gian làm bài (đơn vị: giây)
-TONG_THOI_GIAN = 0
-thoi_gian_con_lai = TONG_THOI_GIAN
-timer_dem_nguoc: ui.timer|None = None
-
-# Thanh tiến trình
-thanh_thoi_gian: ui.linear_progress|None = None
-nhan_thoi_gian: ui.label|None = None
-
-def row_evenly():
-    """Tạo một hàng dàn đều tuyệt đối mà không cần nhớ class"""
-    return ui.row().classes('w-full justify-evenly items-center')
-
-def vecauhoi():
-    global bai_tap_hien_tai, nut_nop_bai, nut_tao_moi, timer_dem_nguoc, thoi_gian_con_lai, TONG_THOI_GIAN
-
-    if not vungcauhoi:
+    if not vungthongbao or not vungcauhoi:
         return
-    vungcauhoi.clear()
-
-    # Hiển thị thanh thời gian và reset về ban đầu
-    the_thoi_gian.set_visibility(True)
-
-    TONG_THOI_GIAN = cauhinh._thoigian
-    thoi_gian_con_lai = TONG_THOI_GIAN
-    if thanh_thoi_gian:
-        thanh_thoi_gian.set_value(1.0)
-    if nhan_thoi_gian:
-        nhan_thoi_gian.set_text(f'{int(thoi_gian_con_lai)}')
-
-    # Tắt timer cũ nếu có trước khi chạy cái mới
-    if timer_dem_nguoc:
-        timer_dem_nguoc.deactivate()
-
-    with vungcauhoi:
-        bai_tap_hien_tai = BaiTap()
-        bai_tap_hien_tai.hienthi()
-
-    if nut_tao_moi:
-        nut_tao_moi.set_visibility(False)
-    if nut_nop_bai:
-        nut_nop_bai.set_visibility(True)
-
-    timer_dem_nguoc = ui.timer(1.0, giam_thoi_gian)
-
-def giam_thoi_gian():
-    global thoi_gian_con_lai, timer_dem_nguoc
-
-    if thoi_gian_con_lai > 0:
-        thoi_gian_con_lai -= 1
-        # Cập nhật nhãn hiển thị chữ
-        if thanh_thoi_gian and nhan_thoi_gian:
-            nhan_thoi_gian.set_text(f"⌛ {thoi_gian_con_lai} s")
-            ty_le = thoi_gian_con_lai / TONG_THOI_GIAN
-            thanh_thoi_gian.set_value(ty_le)
-
-            # Đổi màu thanh sang đỏ dần khi sắp hết giờ dưới 15 giây
-            if thoi_gian_con_lai == 0:
-                the_thoi_gian.set_visibility(False)
-            elif thoi_gian_con_lai <= TONG_THOI_GIAN/5:
-                thanh_thoi_gian.props('color="red" size="30px"').classes(replace='w-3/4 md:w-4/5 lg:w-6/7 rounded-full outline-3 outline-offset-1 outline-gray-700 grow')
-                nhan_thoi_gian.classes(replace='font-bold text-2xl text-red-500 text-center min-w-[120px]')
-            elif thoi_gian_con_lai <= TONG_THOI_GIAN/2 and thoi_gian_con_lai > TONG_THOI_GIAN/5:
-                thanh_thoi_gian.props('color="orange" size="20px"').classes(replace='w-3/4 md:w-4/5 lg:w-6/7 rounded-full outline-3 outline-offset-1 outline-cyan-300 grow')
-                nhan_thoi_gian.classes(replace='font-bold text-xl text-orange-500 text-center min-w-[120px]')
-            else:
-                thanh_thoi_gian.props('color="green" size="10px"').classes(replace='w-3/4 md:w-4/5 lg:w-6/7 rounded-full outline-3 outline-offset-1 outline-pink-300 grow')
-                nhan_thoi_gian.classes(replace='font-bold text-center text-lg text-yellow-500 min-w-[120px]')
     else:
-        # KHI HẾT GIỜ (Thời gian về 0)
-        ui.notify('⌛ Đã hết thời gian làm bài!', type='warning')
+        # Nạp cấu hình mới để đảm bảo lấy được cấu hình mới nhất
+        cauhinh.nap_cau_hinh()
 
-        if timer_dem_nguoc:
-            timer_dem_nguoc.deactivate() # Dừng bộ đếm
+        # Tạo các thành phần giao diện cần thiết
+        bai_tap_hien_tai = BaiTap()
+        thanh_dem_nguoc = ThanhDemNguoc(ham_het_gio=hoanthanh)
 
-        nopbai()
+        # Ẩn nút tạo bài mới và hiển thị nút Hoàn thành
+        nut_hoan_thanh.set_visibility(True)
+        nut_tao_moi.set_visibility(False)
 
-def nopbai():
-    global timer_dem_nguoc
-    # Nếu bấm nộp bài thủ công trước khi hết giờ, hãy dừng bộ đếm thời gian lại
-    if timer_dem_nguoc:
-        timer_dem_nguoc.deactivate()
+        # Xóa các vùng thông báo và vùng câu hỏi
+        vungthongbao.clear()
+        vungcauhoi.clear()
+        vungcauhoi.classes(replace='w-full px-4')
 
-    if bai_tap_hien_tai is None:
-        ui.notify('Vui lòng bấm "Tạo mới" để làm bài trước nhé!', type='warning')
-        return
+        # Tạo nội dung vào các vùng
+        with vungthongbao:
+            if cauhinh._batthoigian:
+                thanh_dem_nguoc.tong_thoi_gian = cauhinh._thoigian
+                thanh_dem_nguoc.hienthi()
+                thanh_dem_nguoc.batdau()
+        with vungcauhoi:
+            bai_tap_hien_tai.hienthi()
 
-    # Tiến hành chấm điểm toàn bộ
-    bai_tap_hien_tai.cham_diem_toan_bo()
+def hoanthanh():
+    global bai_tap_hien_tai, thanh_dem_nguoc
 
-    # # Tính điểm hệ số 10 hoặc hiển thị lời khen cho bé Chit
-    # diem_so = round((dung / tong) * 10, 1) if tong > 0 else 0
+    # Khóa vùng câu hỏi để ngăn nhập thêm sau khi hết giờ
+    # vungcauhoi.classes(replace='w-full px-4 pointer-events-none')
 
-    # if dung == tong:
-    #     ui.notify(f'🎉 Xuất sắc quá Chit ơi! Đúng {dung}/{tong} câu. Đạt điểm 10 tuyệt đối!', type='positive', duration=5)
-    # elif dung >= tong / 2:
-    #     ui.notify(f'👍 Khá lắm Chit! Đúng {dung}/{tong} câu. Đạt {diem_so} điểm. Cố gắng lên nhé!', type='info', duration=5)
-    # else:
-    #     ui.notify(f'💪 Chit đúng {dung}/{tong} câu ({diem_so} điểm). Lần sau mình làm cẩn thận hơn nhé!', type='warning', duration=5)
+    if bai_tap_hien_tai:
+        bai_tap_hien_tai.hetgio()
+    # await asyncio.sleep(0.01)
 
-    if nut_tao_moi:
-        nut_tao_moi.set_visibility(True)
-    if nut_nop_bai:
-        nut_nop_bai.set_visibility(False)
+    ui.notify('Đang chấm điểm...', type='positive', color='green')
 
-with ui.header():
-    with ui.row(align_items='center').classes('w-full justify-evenly'):
-        nut_tao_moi = ui.button(icon='add', on_click=vecauhoi, color='orange').props('size="lg"')
-        nut_nop_bai = ui.button(icon='done_all', on_click=nopbai, color='green').props('size="lg"')
-        nut_nop_bai.set_visibility(False)
+    # await asyncio.sleep(0.01)
 
-        ui.button(icon='settings', on_click=cauhinh.open, color='gray').props('size="lg"')
+    # sleep(2)
+    vungthongbao.clear()
 
-with ui.row(align_items='center').classes('w-full p-4 rounded-xl') as the_thoi_gian:
-    thanh_thoi_gian = ui.linear_progress(value=1.0, show_value=False)
-    nhan_thoi_gian = ui.label()
+    # Chấm điểm bài tập hiện tại
+    if bai_tap_hien_tai:
+        bai_tap_hien_tai.cham_diem_toan_bo()
 
-    the_thoi_gian.set_visibility(False)
+    # Hiển thị nút tạo bài mới và ẩn nút Hoàn thành
+    nut_hoan_thanh.set_visibility(False)
+    nut_tao_moi.set_visibility(True)
 
-with ui.element().classes('bg-brown-700 w-full grow'):
-    vungcauhoi = ui.element().classes('w-full mt-3 p-4')
+# Giao diện chính
+with ui.header().classes('justify-end'):
+    nut_tao_moi = ui.button(icon='add', color='orange', on_click=taomoi).props('size="lg"').classes('rounded-xl')
+    nut_hoan_thanh = ui.button(icon='done_all', color='green', on_click=hoanthanh).props('size="lg"').classes('rounded-xl')
+    ui.button(icon='settings', color='brown', on_click=cauhinh.open).props('size="lg"').classes('rounded-xl')
 
-with ui.footer():
-     with ui.row(align_items='center').classes('w-full justify-evenly'):
-        ui.label('Danh cho chi Chit hoc toan')
-        ui.label('v 0.1')
-        ui.label('Trinh Quang Tuan')
+    # Ẩn nút hoàn thành
+    nut_hoan_thanh.set_visibility(False)
+
+
+vungthongbao = ui.element().classes('w-full px-4 mb-2')
+vungcauhoi = ui.element().classes('w-full px-4')
+
+# Footer
+with ui.footer().classes('w-full justify-evenly items-center'):
+    ui.label('Tặng chị Chít').classes('text-pink-500 font-bold text-xl')
+    ui.label('v 0.1')
+    ui.label('Ba Tuấn yêu quái').classes('italic')
+
 
 ui.run()

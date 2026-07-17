@@ -15,7 +15,7 @@ class CauHoi:
         self._cauhoi: str = ""
         self._traloi: float | None = None
         self._ketqua: float | None = None
-        self._kiemtra: str = "!"
+        self._kiemtra:ui.label|None = None
 
         if len(phep_tinh) == 0:
             self._pheptinh = ['+']
@@ -55,35 +55,47 @@ class CauHoi:
                 ui.label(f"{self._cauhoi} =").classes("text-base font-bold text-gray-700 whitespace-nowrap grow text-right pr-2")
 
                 # Cột 2: Ô nhập số - Giữ kích thước nhỏ gọn
-                ui.number(on_change=lambda e: self.kiemtranhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold'")
+                self.nhap_tra_loi = ui.number(on_change=lambda e: self.kiemtranhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold'")
 
                 # Cột 3: Icon đúng/sai (❓, ✅, ❌)
-                ui.label().bind_text(self, '_kiemtra').classes("text-xl font-bold w-8 text-center text-red-500")
+                self._kiemtra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
 
     def kiemtranhap(self, e):
+        if not self._kiemtra:
+            return
+
         if e.value is None and e.value == '':
-            self._kiemtra = '!'
+            self._kiemtra.set_text('!')
         else:
-            self._kiemtra = ''
+            self._kiemtra.set_text('')
 
     def chamdiem(self):
+        if not self._kiemtra:
+            return
+
         if self._traloi is None or self._ketqua is None:
-            self._kiemtra = '!'
+            self._kiemtra.set_text('❌')
+            self._kiemtra.classes('fade-in-3s')
             return
 
         if self._traloi == self._ketqua:
-            self._kiemtra = "✅"
+            self._kiemtra.set_text("✅")
         else:
-            self._kiemtra = "❌"
+            self._kiemtra.set_text("❌")
+
 
         try:
             # Làm tròn 2 chữ số để xử lý các phép chia có số thập phân lẻ
             if round(float(self._traloi), 2) == round(float(self._ketqua), 2):
-                self._kiemtra = '✅'
+                self._kiemtra.set_text('✅')
             else:
-                self._kiemtra = '❌'
+                self._kiemtra.set_text('❌')
         except (ValueError, TypeError):
-            self._kiemtra = '!'
+            self._kiemtra.set_text('!')
+
+        # Đặt class hiện dần cho icon kiểm tra
+        self._kiemtra.classes('fade-in-3s')
+
 
 
 class BaiTap:
@@ -113,8 +125,8 @@ class BaiTap:
                 self._ketquaam = dt.get("ketquaam", False)
 
     def hienthi(self):
-        with ui.card().classes('w-full max-w-5xl mx-auto p-6 bg-white shadow-md rounded-xl'):
-            with ui.row().classes('w-full justify-center gap-4 mb-6') as self.khung_diem:
+        with ui.card().classes('w-full max-w-5xl mx-auto p-6 bg-white shadow-md rounded-xl fade-in-1s'):
+            with ui.row().classes('w-full justify-center gap-4 mb-6 fade-in-1s') as self.khung_diem:
                 with ui.card().classes('p-3 px-5 items-center border border-emerald-100 bg-emerald-50/30 min-w-[120px]'):
                     ui.label('Số câu đúng').classes('text-xs text-emerald-600 font-medium')
                     self.lbl_socaudung = ui.label('0').classes('text-2xl font-black text-emerald-700 mt-1').bind_text(self, '_socaudung')
@@ -136,14 +148,16 @@ class BaiTap:
                     )
                     cauhoi.hienthi()
                     self.danh_sach_cau_hoi.append(cauhoi)
-
-    def cham_diem_toan_bo(self):
-        self._socaudung = 0
+    def hetgio(self):
         for cauhoi in self.danh_sach_cau_hoi:
-            cauhoi.chamdiem()
-            if cauhoi._kiemtra == '✅':
-                self._socaudung += 1
-        # self._diem = round((self._socaudung / self._socauhoi) * 10, 0) if self._socauhoi > 0 else 0
+            cauhoi.nhap_tra_loi.disable()
+
+    def cong_diem(self, cauhoi):
+        if cauhoi._kiemtra.text == '✅':
+            self._socaudung += 1
+
+    def hien_thi_tong_diem(self):
+        # ui.notify('Hien thi tong diem')
         self._diem = int(round((self._socaudung / self._socauhoi) * 10, 0)) if self._socauhoi > 0 else 0
 
         # CẬP NHẬT GIAO DIỆN TRỰC TIẾP TẠI ĐÂY:
@@ -154,3 +168,18 @@ class BaiTap:
             self.lbl_socaudung.text = f'{self._socaudung}/{self._socauhoi}'
         if hasattr(self, 'lbl_diem'):
             self.lbl_diem.text = str(self._diem)
+
+    def cham_diem_toan_bo(self):
+        do_tre_tung_cau = 1
+        self._socaudung = 0
+        for index, cauhoi in enumerate(self.danh_sach_cau_hoi):
+            # Xác định độ trễ hiển thị theo từng câu hỏi
+            do_tre = (index+1)*do_tre_tung_cau
+            # Hẹn giờ chấm điểm từng câu hỏi theo độ trễ
+            ui.timer(do_tre, cauhoi.chamdiem, once=True)
+            # Đồng thời hẹn giờ cộng điểm cho các câu hỏi đúng (đồng bộ độ trễ với việc chấm điểm)
+            ui.timer(do_tre, lambda c=cauhoi: self.cong_diem(c), once=True)
+        # Hiển thị tổng điểm sau khi toàn bộ câu hỏi được chấm
+        tong_do_tre = (len(self.danh_sach_cau_hoi) + 2)*do_tre_tung_cau
+        ui.timer(tong_do_tre, self.hien_thi_tong_diem, once=True)
+        # ui.label(f'Tong do tre: {tong_do_tre}')
