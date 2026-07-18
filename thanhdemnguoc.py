@@ -29,7 +29,7 @@ class ThanhDemNguoc:
             self.bo_dem_nguoc.deactivate()
 
     def doi_kieu_thanh_thoi_gian(self):
-        # Đổi màu thanh sang đỏ dần khi sắp hết giờ dưới 15 giây
+        # Đổi màu thanh sang đỏ dần khi sắp hết giờ
         if not self.thanh_thoi_gian or not self.nhan_thoi_gian:
             return
 

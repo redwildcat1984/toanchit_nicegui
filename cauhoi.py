@@ -75,7 +75,7 @@ class CauHoi:
 
         if self._traloi is None or self._ketqua is None:
             self._kiemtra.set_text('❌')
-            self._kiemtra.classes('fade-in-3s')
+            self._kiemtra.classes('fade-in-2s')
             return
 
         if self._traloi == self._ketqua:

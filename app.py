@@ -1,5 +1,7 @@
 from nicegui import ui
 
+import os
+
 from cauhinh import CauHinh
 from cauhoi import BaiTap
 from thanhdemnguoc import ThanhDemNguoc
@@ -107,8 +109,8 @@ vungcauhoi = ui.element().classes('w-full px-4')
 # Footer
 with ui.footer().classes('w-full justify-evenly items-center'):
     ui.label('Tặng chị Chít').classes('text-pink-500 font-bold text-xl')
-    ui.label('v 0.1')
+    ui.label('v 1.0')
     ui.label('Ba Tuấn yêu quái').classes('italic')
 
-
-ui.run()
+port = int(os.environ.get("PORT", 8080))
+ui.run(host='0.0.0.0', port=port, reload=False, storage_secret='trinhquangtuanlabayeuquai', title='App toán cho chị Chít')
