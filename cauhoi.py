@@ -49,16 +49,16 @@ class CauHoi:
                     break
 
             # Sử dụng flex row, không cho co cụm (whitespace-nowrap) để đề bài luôn nằm ngang
-            with ui.row().classes('w-full items-center justify-between no-wrap'):
+            with ui.row().classes('w-full justify-between items-center no-wrap px-2 py-1'):
 
-                # Cột 1: Đề bài (Phép tính) - Thêm 'whitespace-nowrap' để ép nằm trên 1 dòng
-                ui.label(f"{self._cauhoi} =").classes("text-base font-bold text-gray-700 whitespace-nowrap grow text-right pr-2")
+                        # Cột 1: Đề bài - Bỏ 'grow' và 'text-right', dùng 'text-left' để phép tính nằm cố định bên lề trái
+                        ui.label(f"{self._cauhoi} =").classes("text-base font-bold text-gray-700 whitespace-nowrap text-left min-w-[80px]")
 
-                # Cột 2: Ô nhập số - Giữ kích thước nhỏ gọn
-                self.nhap_tra_loi = ui.number(on_change=lambda e: self.kiemtranhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold'")
+                        # Cột 2: Ô nhập số - Giữ nguyên w-20
+                        self.nhap_tra_loi = ui.number(on_change=lambda e: self.kiemtranhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold'")
 
-                # Cột 3: Icon đúng/sai (❓, ✅, ❌)
-                self._kiemtra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
+                        # Cột 3: Icon đúng/sai - Giữ nguyên w-8
+                        self._kiemtra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
 
     def kiemtranhap(self, e):
         if not self._kiemtra:
@@ -137,7 +137,7 @@ class BaiTap:
             self.khung_diem.set_visibility(False)
 
             self.danh_sach_cau_hoi.clear()
-            with ui.grid().classes('w-full grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2'):
+            with ui.grid().classes('w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2'):
                 for i in range(self._socauhoi):
                     cauhoi = CauHoi(
                         tu=self._tu,

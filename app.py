@@ -113,4 +113,4 @@ with ui.footer().classes('w-full justify-evenly items-center'):
     ui.label('Ba Tuấn yêu quái').classes('italic')
 
 port = int(os.environ.get("PORT", 8080))
-ui.run(host='0.0.0.0', port=port, reload=False, storage_secret='trinhquangtuanlabayeuquai', title='App toán cho chị Chít')
+ui.run(host='0.0.0.0', port=port, reload=True, storage_secret='trinhquangtuanlabayeuquai', title='App toán cho chị Chít')
