@@ -12,7 +12,7 @@ class CauHoi:
         self._ketquaam = ket_qua_am
         self._cauhoi: str = ""
         self._ketqua: float | None = None
-        self._kiemtra:ui.label|None = None
+        self._kiemtra:bool|None = None
         self.label_kiem_tra:ui.label|None = None
         self._traloi:int|None = None
         self.nhap_tra_loi:ui.number|None = None
@@ -30,6 +30,16 @@ class CauHoi:
     def kiem_tra_ket_qua(self):
         """Hàm trừu tượng, các class con bắt buộc phải tự định nghĩa cách vẽ"""
         raise NotImplementedError("Class con phải tự triển khai hàm kiem_tra_ket_qua")
+
+    def hien_thi_ket_qua(self):
+        if not self.label_kiem_tra:
+            return
+        if self._kiemtra:
+            self.label_kiem_tra.set_text("✅")
+        else:
+            self.label_kiem_tra.set_text("❌")
+        # Đặt class hiện dần cho icon kiểm tra
+        self.label_kiem_tra.classes('fade-in-3s')
 
     def hetgio(self):
         if self.nhap_tra_loi:
@@ -69,41 +79,37 @@ class TinhKetQua(CauHoi):
             self.nhap_tra_loi = ui.number(min=0, on_change=lambda e: self.kiem_tra_nhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold text-black'")
 
             # Cột 3: Icon đúng/sai - Giữ nguyên w-8
-            self._kiemtra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
+            self.label_kiem_tra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
 
     def kiem_tra_nhap(self, e):
-        if not self._kiemtra:
+        if not self.label_kiem_tra:
             return
         if e.value is None and e.value == '':
-            self._kiemtra.set_text('!')
+            self.label_kiem_tra.set_text('!')
         else:
-            self._kiemtra.set_text('')
+            self.label_kiem_tra.set_text('')
 
     def kiem_tra_ket_qua(self):
-        if not self._kiemtra:
-            return
-
         if self._traloi is None or self._ketqua is None:
-            self._kiemtra.set_text('❌')
-            self._kiemtra.classes('fade-in-2s')
+            self._kiemtra = None
             return
 
         if self._traloi == self._ketqua:
-            self._kiemtra.set_text("✅")
+            self._kiemtra = True
         else:
-            self._kiemtra.set_text("❌")
+            self._kiemtra = False
 
         try:
             # Làm tròn 2 chữ số để xử lý các phép chia có số thập phân lẻ
             if round(float(self._traloi), 2) == round(float(self._ketqua), 2):
-                self._kiemtra.set_text('✅')
+                self._kiemtra = True
             else:
-                self._kiemtra.set_text('❌')
+                self._kiemtra = False
         except (ValueError, TypeError):
-            self._kiemtra.set_text('!')
+            self._kiemtra = None
 
-        # Đặt class hiện dần cho icon kiểm tra
-        self._kiemtra.classes('fade-in-3s')
+        self.hien_thi_ket_qua()
+
 
 class BaiTap:
     def __init__(self) -> None:
@@ -161,7 +167,7 @@ class BaiTap:
             cauhoi.hetgio()
 
     def cong_diem(self, cauhoi):
-        if cauhoi._kiemtra.text == '✅':
+        if cauhoi._kiemtra:
             self._socaudung += 1
 
     def hien_thi_tong_diem(self):
