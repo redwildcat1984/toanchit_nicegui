@@ -8,6 +8,6 @@
         "-"
     ],
     "ketquaam": false,
-    "batthoigian": true,
-    "thoigian": 300.0
+    "batthoigian": false,
+    "thoigian": 300
 }

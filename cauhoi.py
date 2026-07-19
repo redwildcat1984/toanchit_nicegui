@@ -2,26 +2,40 @@ import random
 from nicegui import ui
 from json_connect import JsonConnect
 
-
 class CauHoi:
-    def __init__(
-        self, tu: int, den: int, phep_tinh: list, so_phep_tinh: int, ket_qua_am: bool
-    ) -> None:
+    def __init__(self, loai_cau_hoi:str, tu:int, den:int, phep_tinh: list, so_phep_tinh: int, ket_qua_am: bool ) -> None:
+        self._loai_cau_hoi = loai_cau_hoi
         self._tu = tu
         self._den = den
         self._pheptinh = phep_tinh
         self._sopheptinh = so_phep_tinh
         self._ketquaam = ket_qua_am
         self._cauhoi: str = ""
-        self._traloi: float | None = None
         self._ketqua: float | None = None
         self._kiemtra:ui.label|None = None
+        self.label_kiem_tra:ui.label|None = None
+        self._traloi:int|None = None
+        self.nhap_tra_loi:ui.number|None = None
 
-        if len(phep_tinh) == 0:
-            self._pheptinh = ['+']
-            ui.notify("Chưa chỉ định phép tính. Mặc định dùng phép cộng (+)", type='warning')
+    @staticmethod
+    def tao_moi(loai_cau_hoi:str, *args, **kwargs):
+        if loai_cau_hoi == 'tinh_ket_qua':
+            return TinhKetQua(loai_cau_hoi, *args, **kwargs)
+        raise ValueError(f'Không có loại câu hỏi {loai_cau_hoi}')
 
-    def tao(self):
+    def hien_thi(self):
+        """Hàm trừu tượng, các class con bắt buộc phải tự định nghĩa cách vẽ"""
+        raise NotImplementedError("Class con phải tự triển khai hàm hien_thi")
+
+    def kiem_tra_ket_qua(self):
+        """Hàm trừu tượng, các class con bắt buộc phải tự định nghĩa cách vẽ"""
+        raise NotImplementedError("Class con phải tự triển khai hàm kiem_tra_ket_qua")
+
+    def hetgio(self):
+        if self.nhap_tra_loi:
+            self.nhap_tra_loi.disable()
+
+    def tao_cau_hoi(self):
         # ui.notify('Đang tạo câu hỏi...', type='info')
         self._cauhoi = ""
         for i in range(int(self._sopheptinh) + 1):
@@ -31,44 +45,41 @@ class CauHoi:
         self._cauhoi = self._cauhoi.strip()
         try:
             self._ketqua = eval(self._cauhoi)
+            # Kiểm tra có cho phép kết quả âm không, nếu không thì tạo câu khác
+            if self._ketqua:
+                if self._ketqua < 0 and not self._ketquaam:
+                    self.tao_cau_hoi()
         except ZeroDivisionError:
             # Nếu gặp lỗi chia cho 0 thì tạo câu khác
-            self.tao()
+            self.tao_cau_hoi()
 
-    def hienthi(self):
-        self.tao()
 
-        if not self._ketquaam:
-            # ui.notify('Chế độ kết quả không âm', type='info')
-            gioihan_lap = 0
-            while self._ketqua is None or self._ketqua < 0:
-                # ui.notify('Kết quả âm, đang tạo mới', type='warning')
-                self.tao()
-                gioihan_lap += 1
-                if gioihan_lap>100:
-                    break
+class TinhKetQua(CauHoi):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
-            # Sử dụng flex row, không cho co cụm (whitespace-nowrap) để đề bài luôn nằm ngang
-            with ui.row().classes('w-full justify-between items-center no-wrap px-2 py-1'):
-                # Cột 1: Đề bài - Bỏ 'grow' và 'text-right', dùng 'text-left' để phép tính nằm cố định bên lề trái
-                ui.label(f"{self._cauhoi} =").classes("text-base font-bold text-black whitespace-nowrap text-left min-w-[80px]")
+    def hien_thi(self):
+        self.tao_cau_hoi()
+        # Sử dụng flex row, không cho co cụm (whitespace-nowrap) để đề bài luôn nằm ngang
+        with ui.row().classes('w-full justify-between items-center no-wrap px-2 py-1'):
+            # Cột 1: Đề bài - Bỏ 'grow' và 'text-right', dùng 'text-left' để phép tính nằm cố định bên lề trái
+            ui.label(f"{self._cauhoi} =").classes("text-base font-bold text-black whitespace-nowrap text-left min-w-[80px]")
 
-                # Cột 2: Ô nhập số - Giữ nguyên w-20
-                self.nhap_tra_loi = ui.number(min=0, on_change=lambda e: self.kiemtranhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold text-black'")
+            # Cột 2: Ô nhập số - Giữ nguyên w-20
+            self.nhap_tra_loi = ui.number(min=0, on_change=lambda e: self.kiem_tra_nhap(e)).bind_value(self, "_traloi").classes("w-20").props("outlined dense input-class='text-center text-lg font-semibold text-black'")
 
-                # Cột 3: Icon đúng/sai - Giữ nguyên w-8
-                self._kiemtra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
+            # Cột 3: Icon đúng/sai - Giữ nguyên w-8
+            self._kiemtra = ui.label('!').classes("text-xl font-bold w-8 text-center text-red-500")
 
-    def kiemtranhap(self, e):
+    def kiem_tra_nhap(self, e):
         if not self._kiemtra:
             return
-
         if e.value is None and e.value == '':
             self._kiemtra.set_text('!')
         else:
             self._kiemtra.set_text('')
 
-    def chamdiem(self):
+    def kiem_tra_ket_qua(self):
         if not self._kiemtra:
             return
 
@@ -82,7 +93,6 @@ class CauHoi:
         else:
             self._kiemtra.set_text("❌")
 
-
         try:
             # Làm tròn 2 chữ số để xử lý các phép chia có số thập phân lẻ
             if round(float(self._traloi), 2) == round(float(self._ketqua), 2):
@@ -94,8 +104,6 @@ class CauHoi:
 
         # Đặt class hiện dần cho icon kiểm tra
         self._kiemtra.classes('fade-in-3s')
-
-
 
 class BaiTap:
     def __init__(self) -> None:
@@ -138,18 +146,19 @@ class BaiTap:
             self.danh_sach_cau_hoi.clear()
             with ui.grid().classes('w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2'):
                 for i in range(self._socauhoi):
-                    cauhoi = CauHoi(
+                    cauhoi = CauHoi.tao_moi(
+                        loai_cau_hoi='tinh_ket_qua',
                         tu=self._tu,
                         den=self._den,
                         phep_tinh=self._pheptinh,
                         so_phep_tinh=self._sopheptinh,
                         ket_qua_am=self._ketquaam,
                     )
-                    cauhoi.hienthi()
+                    cauhoi.hien_thi()
                     self.danh_sach_cau_hoi.append(cauhoi)
     def hetgio(self):
         for cauhoi in self.danh_sach_cau_hoi:
-            cauhoi.nhap_tra_loi.disable()
+            cauhoi.hetgio()
 
     def cong_diem(self, cauhoi):
         if cauhoi._kiemtra.text == '✅':
@@ -169,13 +178,14 @@ class BaiTap:
             self.lbl_diem.text = str(self._diem)
 
     def cham_diem_toan_bo(self):
+        ui.notify('Bắt đầu chấm điểm', type='info')
         do_tre_tung_cau = 1
         self._socaudung = 0
         for index, cauhoi in enumerate(self.danh_sach_cau_hoi):
             # Xác định độ trễ hiển thị theo từng câu hỏi
             do_tre = (index+1)*do_tre_tung_cau
             # Hẹn giờ chấm điểm từng câu hỏi theo độ trễ
-            ui.timer(do_tre, cauhoi.chamdiem, once=True)
+            ui.timer(do_tre, cauhoi.kiem_tra_ket_qua, once=True)
             # Đồng thời hẹn giờ cộng điểm cho các câu hỏi đúng (đồng bộ độ trễ với việc chấm điểm)
             ui.timer(do_tre, lambda c=cauhoi: self.cong_diem(c), once=True)
         # Hiển thị tổng điểm sau khi toàn bộ câu hỏi được chấm
