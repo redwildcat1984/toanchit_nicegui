@@ -3,8 +3,10 @@ from nicegui import ui
 import os
 
 from cauhinh import CauHinh
-from cauhoi import BaiTap
+from baitap import BaiTap
 from thanhdemnguoc import ThanhDemNguoc
+
+from giatri_codinh import PHIEN_BAN_HIEN_TAI
 
 # Tạo màu nền chung
 ui.query('.q-page').style('background-color: #4f1e08;')
@@ -104,12 +106,14 @@ with ui.header().classes('justify-end'):
 
 
 vungthongbao = ui.element().classes('w-full px-4 mb-2')
-vungcauhoi = ui.element().classes('w-full px-4')
+vungcauhoi = ui.element().classes('w-full px-4 items-center')
+
+# vungcauhoi = BaiTap().hienthi()
 
 # Footer
 with ui.footer().classes('w-full justify-evenly items-center'):
     ui.label('Tặng chị Chít').classes('text-pink-500 font-bold text-xl')
-    ui.label('v 1.0')
+    ui.label(f'v {PHIEN_BAN_HIEN_TAI}')
     ui.label('Ba Tuấn yêu quái').classes('italic')
 
 port = int(os.environ.get("PORT", 8080))
