@@ -1,13 +1,17 @@
 {
-    "tu": 1,
-    "den": 20,
+    "tu": 0,
+    "den": 10,
     "socauhoi": 10,
-    "sopheptinh": 1,
+    "loaicauhoi": [
+        "tinh_ket_qua",
+        "dien_cho_trong"
+    ],
+    "sopheptinh": 2,
     "pheptinh": [
-        "+",
-        "-"
+        "tru",
+        "cong"
     ],
     "ketquaam": false,
-    "batthoigian": true,
-    "thoigian": 300.0
+    "batthoigian": false,
+    "thoigian": 60
 }
